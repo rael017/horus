@@ -1,0 +1,141 @@
+<section class="sidebar close">
+	
+    <div class="logo-details">
+		<i class='bx bxl-c-plus-plus'></i>
+		<span class="logo_name">Lenons</span>
+	</div>
+	<ul class="nav-links">
+		
+		<li>
+		  <a href="{{URL}}/Admin">
+			<i class='bx bx-grid-alt' ></i>
+			<span class="link_name">Dashboard</span>
+		  </a>
+		  <ul class="sub-menu blank">
+			<li><a class="link_name" href="#">Dashboard</a></li>
+		  </ul>
+		</li>
+		<li>
+			<div class="iocn-link">
+			  <a href="#">
+				<i class='bx bx-wallet-alt'></i>
+				<span class="link_name">Pedidos</span>
+			  </a>
+			  <i class='bx bxs-chevron-down arrow' ></i>
+			</div>
+			<ul class="sub-menu">
+			  <li><a class="link_name" href="#">Pedidos</a></li>
+			  <li><a href="#">HTML & CSS</a></li>
+			  <li><a href="#">JavaScript</a></li>
+			  <li><a href="#">PHP & MySQL</a></li>
+			</ul>
+		</li>
+		<li>
+			<div class="iocn-link">
+			  <a href="#">
+				<i class='bx bx-male'></i>
+				<span class="link_name">Clientes</span>
+			  </a>
+			  <i class='bx bxs-chevron-down arrow' ></i>
+			</div>
+			<ul class="sub-menu">
+			  <li><a class="link_name" href="#">Clientes</a></li>
+			  <li><a href="#">HTML & CSS</a></li>
+			  <li><a href="#">JavaScript</a></li>
+			  <li><a href="#">PHP & MySQL</a></li>
+			</ul>
+		</li>
+		<li>
+		  <div class="iocn-link">
+			<a href="#">
+			  <i class='bx bx-book-alt' ></i>
+			  <span class="link_name">Posts</span>
+			</a>
+			<i class='bx bxs-chevron-down arrow' ></i>
+		  </div>
+		  <ul class="sub-menu">
+			<li><a class="link_name">Posts</a></li>
+			<li><a href="{{URL}}/Admin/noticias">Noticias</a></li>
+			<li><a href="{{URL}}/Admin/noticias/cadastrar-noticia">Cadastrar nocicias</a></li>
+			<li><a href="{{URL}}/Admin/noticias/cadastrar-categoria">Cadastrar categoria</a></li>
+		  </ul>
+		</li>
+		<li>
+			<div class="iocn-link">
+			  <a href="analize">
+				<i class='bx bx-pie-chart-alt-2'></i>
+				<span class="link_name">Analize</span>
+			  </a>
+			  <i class='bx bxs-chevron-down arrow' ></i>
+			</div>
+			<ul class="sub-menu">
+			  <li><a class="link_name">Analizar posts</a></li>
+			  <li><a href="{{URL}}/Admin/analize">Em analize</a></li>
+			  <li><a href="{{URL}}/Admin/analize/analizar-noticias">Editar noticias</a></li>
+			</ul>
+		</li>
+		
+		<li>
+		  <a href="#">
+			<i class='bx bx-message-rounded-dots'></i>
+			<span class="link_name">Menssagens</span>
+		  </a>
+		  <ul class="sub-menu blank">
+			<li><a class="link_name" href="{{URL}}/Admin/menssagens">Menssagens</a></li>
+		  </ul>
+		</li>
+
+		<li>
+			<div class="iocn-link">
+				<a >
+					<i class='bx bxs-layout'></i>
+					<span class="link_name">Gerenciar</span>
+				</a>
+				<i class='bx bxs-chevron-down arrow' ></i>
+			</div>
+			<ul class="sub-menu">
+				<li><a class="link_name" >Gerenciar</a></li>
+				<li><a  href="{{URL}}/Admin/gerenciar/site">Gerenciar Site</a></li>
+				<li><a  href="{{URL}}/Admin/gerenciar/slides">Gerenciar slides</a></li>
+			</ul>
+		</li>
+
+		<li>
+			<div class="iocn-link">
+				<a >
+					<i class='bx bx-cog' ></i>
+					<span class="link_name">geral</span>
+				</a>
+				<i class='bx bxs-chevron-down arrow' ></i>
+			</div>
+			<ul class="sub-menu">
+				<li><a class="link_name" >Geral</a></li>
+				<li><a  href="{{URL}}/Admin/usuarios">Usuarios</a></li>
+			</ul>
+		</li>
+		<li>
+			<div class="profile-details">
+				<div class="profile-content">
+				<!--<img src="image/profile.jpg" alt="profileImg">-->
+				</div>
+				<div class="name-job">
+				<div class="profile_name">felipe raphael</div>
+				<div class="job">blog tec</div>
+				</div>
+				<a href="{{URL}}/Admin/logout">
+					<i class='bx bx-log-out'></i>
+				</a>
+			</div>
+		</li>
+  	</ul>
+</section>
+<section class="home-section" id="modulo">
+	<div class="home-content">
+		<i class='bx bx-menu'></i>
+		<span class="text">painel De Controle</span>
+	</div><!--home-content-->
+
+
+		{{content}}
+
+</section>

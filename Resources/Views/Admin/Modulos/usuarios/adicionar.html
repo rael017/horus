@@ -1,0 +1,45 @@
+<hr>
+
+
+<h3>{{title}}</h3>
+
+<div class="form-whaper">
+    {{status}}
+    <form method="post">
+        <div class="row aling">
+            <div class="form-group w50 flex-e">
+                <input type="text" class="form-control"  name="nome" required placeholder="nome de usuario" >
+            </div>
+
+            <div class="form-group w50 flex-e">
+                <input type="text" class="form-control"  name="email" required placeholder="Email" >
+            </div>
+
+            <div class="form-group w100 my-3">
+                <input type="password" class="form-control"  name="senha" required placeholder="senha">
+            </div>
+
+            <div class="form-group w100 my-3">
+                <select class="form-select" name="cargo">
+                    <option selected>Cargo</option>
+                     <option value="Adiministrador-Geral">Adiministrador-Geral</option>
+                    <option value="Sub-Adiministrador">Sub-Adiministrador</option>
+                    <option value="Redator">Redator</option>
+                </select>
+            </div>
+
+            <div class="form-group flex-e w50 my-3">
+                <a href="{{URL}}/Admin/usuarios">
+                    <button type="button" class="btn btn-warning">voltar</button>
+                </a>
+            </div>
+            <div  class="form-group flex-d w50 my-3">
+                <button type="submit" class="btn btn-success" name="acao">cadastrar</button>
+            </div>
+           
+            
+        </div>
+    </form>
+   
+</div>
+

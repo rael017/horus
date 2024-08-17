@@ -1,0 +1,12 @@
+{
+    "name": "code/mind",
+    "autoload": {
+        "psr-4": {
+            "App\\": "App/"
+        }
+    },
+    "require": {
+        "phpmailer/phpmailer": "^6.9",
+        "predis/predis": "^2.2"
+    }
+}

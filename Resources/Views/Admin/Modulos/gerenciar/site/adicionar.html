@@ -1,0 +1,58 @@
+<hr>
+<table class="table table-light table-striped">
+    <thead>
+        <tr>
+            <th>Pagina</th>
+            <th>Modelo</th>
+            <th>Titulo</th>
+            <td>Status</td>
+        </tr>
+    </thead>
+    <tbody>
+        {{item}}
+    </tbody>
+</table>
+{{pagination}}
+<hr>
+
+
+<h2>Adicionar ao Site</h2>
+<div class="form-whaper">
+
+{{status}}
+<hr>
+    <form method="post" enctype="multipart/form-data">
+        <div class="row aling">
+
+            <div class="form-group w50 flex-d">
+               
+                <input type="text" class="form-control"  name="pagina" required placeholder="nome da pagina" >
+            </div>
+
+            <div class="form-group w50 flex-e">
+                <input type="text" class="form-control"  name="titulo" required placeholder="titulo da pagina" >
+            </div> 
+
+            <div class="form-group w100 my-3 ">
+                 <label for="modelo">Modelo Da Pagina</label>
+                <select class="form-select" name="modelo">
+                    <option selected>Modelo</option>
+                    {{modelos}}
+                </select>
+            </div>
+
+            <div class="form-group my-3">
+                <textarea  class="form-control" name="descricao" placeholder="descrição da pagina" resize="none"></textarea>
+            </div>
+
+            <div class="form-group my-3">
+                <input type="file" class="form-control" name="img">
+            </div>
+           
+            <div class="w100 center">
+                <button type="submit" class="btn btn-success w50" name="adicionar">adicionar</button>
+            </div>
+        </div>
+    </form>
+   
+</div>

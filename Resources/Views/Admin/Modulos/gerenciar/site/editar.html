@@ -1,0 +1,47 @@
+<div class="form-wrapper">
+    <form method="post" enctype="multipart/form-data">
+        <div class="row align-items-center">
+
+            <div class="form-group w-50 flex-end">
+                <label for="pagina">Página:</label>
+                <input type="text" class="form-control" name="pagina" id="pagina" required placeholder="Título da sua página" value="{{pagina}}">
+            </div>
+
+            <div class="form-group w-50 flex-start">
+                <label for="titulo">Título:</label>
+                <input type="text" class="form-control" name="titulo" id="titulo" required placeholder="Título da pagina" value="{{titulo}}">
+            </div>
+
+            <div class="form-group w100 my-3 ">
+                <label for="modelo">Modelo Da Pagina</label>
+                <select class="form-select" name="modelo">
+                    <option selected>{{modelo}}</option>
+                    {{modelos}}
+                </select>
+            </div>
+
+            <div class="form-group w100 my-3 ">
+                <label for="Status">Status</label>
+                <select class="form-select" name="status">
+                    <option selected>{{status}}</option>
+                    <option value="ativo">ativo</option>
+                    <option value="inativo">inativo</option>
+                </select>
+            </div>
+
+            <div class="form-group my-3">
+                <label for="imagem">Imagem:</label>
+                <input type="file" class="form-control" name="imagem" id="imagem"  placeholder="Selecione uma imagem">
+            </div>
+            
+            <div class="form-group my-3">
+                <label for="descricao">Descrição:</label>
+                <textarea name="descricao" id="post" cols="30" rows="10" class="form-control">{{descricao}}</textarea>
+            </div>
+           
+            <div class="form-group">
+                <button type="submit" class="btn btn-success" name="acao">Editar</button>
+            </div>
+        </div>
+    </form>
+</div>
