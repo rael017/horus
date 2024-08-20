@@ -1,0 +1,16 @@
+<?php
+
+use App\Models\DataBase\Crud;
+
+class {{ className }}
+{
+    public function run()
+    {
+        Crud::Create('{{ tableName }}', [
+            'column1' => 'value1',
+            'column2' => 'value2'
+        ]);
+    }
+}
+
+?>

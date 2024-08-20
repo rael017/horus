@@ -1,5 +1,5 @@
 <?php
-namespace App\Models\DataBase;
+namespace App\DataBase;
 
 use \PDO;
 class Crud
@@ -131,6 +131,28 @@ class Crud
             return false;
         }
         
+        return true;
+    }
+
+	// Função para criar tabelas
+    public static function createTable($tableName, $columns) {
+        $columnDefinitions = [];
+        foreach ($columns as $column => $definition) {
+            $columnDefinitions[] = "`$column` $definition";
+        }
+        $columnsSql = implode(', ', $columnDefinitions);
+
+        $sql = "CREATE TABLE `$tableName` ($columnsSql)";
+        
+        self::execute($sql);
+        return true;
+    }
+
+    // Função para apagar tabelas
+    public static function dropTable($tableName) {
+        $sql = "DROP TABLE IF EXISTS `$tableName`";
+        
+        self::execute($sql);
         return true;
     }
 }

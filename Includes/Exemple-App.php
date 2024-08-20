@@ -28,8 +28,6 @@ MainView::init([
 
 Config::setMap([
 	'Manutention'=>\App\Http\Middlewares\Manutention::class,
-	'requiered-admin-logout'=>\App\Http\Middlewares\RequireAdminLogout::class,
-	'requiered-admin-login'=>\App\Http\Middlewares\RequireAdminLogin::class,
 	'api'=>\App\Http\Middlewares\Api::class
 	
 ]);

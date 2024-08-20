@@ -2,7 +2,7 @@
 use  \App\Http\Router;
 
 include_once(__DIR__.'/Includes/App.php');
-include_once(__DIR__.'/Includes/FuncsEcentials.php');
+include_once(__DIR__.'/Includes/Exemple-App.php');
 
 $obRouter = new Router(URL);
 

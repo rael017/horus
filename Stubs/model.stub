@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\DataBase\Crud;
+
+class {{ className }} extends Crud
+{
+    protected $table = '{{ tableName }}';
+    protected $fillable = [{{ fields }}];
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function create(array $data)
+    {
+        return self::Create($this->table, $data);
+    }
+
+    public function read($where = null, $order = null, $limit = null)
+    {
+        return self::Ready($this->table, $where, $order, $limit, '*')->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function update(array $data, $where)
+    {
+        return self::Update($this->table, $where, $data);
+    }
+
+    public function delete($where)
+    {
+        return self::Delete($this->table, $where);
+    }
+}
