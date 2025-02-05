@@ -1,18 +1,22 @@
 <?php
-namespace App\Models;
 
+namespace App\Models;
 use Core\DataBase\Crud;
 
-class {{ className }}
+class Usuariossssoo
 {
-    {{ properties }}
+    public $id;
+    public $name;
+    public $email;
+    public $created_at;
 
-    protected $tableName = '{{ tableName }}';
+    protected $tableName = 'tb_usuariossssoo';
 
     public function create()
     {
         $this->id = Crud::Create($this->tableName, [
-            {{ createFields }}
+            'name' => $this->name,
+            'email' => $this->email
         ]);
         return true;
     }
@@ -20,7 +24,8 @@ class {{ className }}
     public function update()
     {
         return Crud::Update($this->tableName, "id = {$this->id}", [
-            {{ updateFields }}
+            'name' => $this->name,
+            'email' => $this->email
         ]);
     }
 

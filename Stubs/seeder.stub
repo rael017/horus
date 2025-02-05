@@ -1,12 +1,12 @@
 <?php
-
-use App\Models\DataBase\Crud;
+namespace Core\DataBase\Seeders;
+use Core\DataBase\Crud;
 
 class {{ className }}
 {
-    public function run()
+    public function up()
     {
-        Crud::Create('{{ tableName }}', [
+        Crud::Create('tb_{{ tableName }}', [
             'column1' => 'value1',
             'column2' => 'value2'
         ]);

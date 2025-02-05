@@ -2,17 +2,17 @@
 namespace Core\DataBase\Migrations;
 use Core\DataBase\MigrationManeger;
 
-Class {{ className }}
+Class Posts
 {
     public function getTableName()
     {
-        return 'tb_{{ tableName }}';
+        return 'tb_posts';
     }
 
     public function up()
     {
         
-        MigrationManeger::createTable('tb_{{ tableName }}',
+        MigrationManeger::createTable('tb_posts',
         [
             'id' => 'INT AUTO_INCREMENT PRIMARY KEY',
             'name' => 'VARCHAR(100) NOT NULL',
@@ -23,8 +23,7 @@ Class {{ className }}
 
     public function down()
     {
-        MigrationManeger::dropTable('tb_{{ tableName }}');
-
+        MigrationManeger::dropTable('tb_posts');
     }
 }
 
