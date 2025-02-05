@@ -1,6 +1,6 @@
 # **Horus**  
 
-![PHP](https://img.shields.io/badge/PHP-8.1%2B-blue.svg)  
+![PHP](https://img.shields.io/badge/PHP-8.3%2B-blue.svg)  
 ![License](https://img.shields.io/badge/license-MIT-green.svg)  
 
 ## **Descrição**  
