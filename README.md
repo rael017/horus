@@ -17,7 +17,7 @@
 
 ### **1. Clonar o Repositório**  
 ```sh
-git clone https://github.com/rael017/Horus.git
+git clone https://github.com/rael017/horus
 cd Horus
 composer install
 
