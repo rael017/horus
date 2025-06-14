@@ -3,92 +3,69 @@
  
  class Response
  {
-	 /**
-	  * Codigo Da Request
-	  *@var integer
-	  */
-	  
-	  private $httpCode = 200;
-	  
-	  /**
-	   * Cabeçalho Do Responce
-	   * @var array
-	   */
-	  
-	  private $header = [];
-	  
-	  
-	  /**
-	   * Tipo Do conteudo De Retorno
-	   * @var string
-	   */
-	  
-	  private $contentType = 'text/html';
-	  
-	  /**
-	   * Conteudo Da Responce
-	   * @var mixed
-	   */
-	  private $content;
-	  
-	  /** 
-	   * Metodo Responsavel Por Iniciar A Classe E Definir Os Valores
-	   * @param integer $httpCode
-	   * @param mixed $content
-	   * @param string $contentType
-	   */
-	  
-	  function __construct($httpCode,$content,$contentType = 'text/html')
-	   {
-		  $this->httpCode = $httpCode;
-		  $this->content = $content;
-		  $this->setCType($contentType);
-	   }
-	   
-	   /**
-		* Responsavel Por Alterar O Content-Type do Response
-		*@param string $contetType
-	    */
-	  
-	  public function setCType($contentType)
-	   {
-		  $this->contentType = $contentType;
-		  $this->addHeaders('Content-Type',$contentType);
-	   }
-	   /**
-		* Metodo Responsavel Por Adcionar Um registro No Cabeçalho De Response
-		*@param string $key
-		*@param string $value
-	    */
-	   
-	   public function addHeaders($key,$values)
-	   {
-		   $this->header[$key] = $values;
-	   }
-	   
-	   private function sendHeaders()
-	   {
-		   http_response_code($this->httpCode);
-		   
-		   foreach($this->header as $key => $value){
-			   header($key.': '. $value);
-		   }
-	   }
-	   
-	   public function sendResponse()
-	   {
-		   $this->sendHeaders();
-		   switch ($this->contentType){
-			   case 'text/html':
-			   		echo $this->content;
-					exit;
-			   case 'application/json':
-					echo json_encode($this->content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-					exit;
-				
-		   	}
-	   }
-	   
-	 
+     public function __construct(
+         private mixed $content,
+         private int $statusCode = 200,
+         private array $headers = []
+     ) {
+         // Define um Content-Type padrão se não for especificado
+         if (!isset($this->headers['Content-Type'])) {
+             $this->headers['Content-Type'] = 'text/html; charset=utf-8';
+         }
+     }
+ 
+     /**
+      * Envia a resposta HTTP para o navegador (usado em ambientes não-Nexus).
+      */
+     public function send(): void
+     {
+         http_response_code($this->statusCode);
+ 
+         foreach ($this->headers as $key => $value) {
+             header("$key: $value");
+         }
+         
+         if (str_contains($this->headers['Content-Type'], 'application/json')) {
+             echo json_encode($this->content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+         } else {
+             echo $this->content;
+         }
+     }
+     
+     /**
+      * Helper para criar uma resposta JSON.
+      */
+     public static function json(array $data, int $statusCode = 200): self
+     {
+         return new self($data, $statusCode, ['Content-Type' => 'application/json']);
+     }
+ 
+     // --- MÉTODOS GETTER ADICIONADOS ---
+ 
+     /**
+      * Retorna o código de status HTTP da resposta.
+      * @return int
+      */
+     public function getStatusCode(): int
+     {
+         return $this->statusCode;
+     }
+ 
+     /**
+      * Retorna o conteúdo da resposta.
+      * @return mixed
+      */
+     public function getContent(): mixed
+     {
+         return $this->content;
+     }
+ 
+     /**
+      * Retorna os cabeçalhos da resposta.
+      * @return array
+      */
+     public function getHeaders(): array
+     {
+         return $this->headers;
+     }
  }
-?>

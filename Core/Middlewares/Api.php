@@ -1,10 +1,10 @@
 <?php
 
 namespace Core\Middlewares;
-
+use Core\Middlewares\IMiddleware;
 use Exception;
 
-class Api
+class Api implements IMiddleware
 {
 /**
  * metodo responsavel por executar o middleware

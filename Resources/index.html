@@ -1,38 +1,293 @@
 <!doctype html>
-<html translate="no" lang="pt-br">
-  <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-    rel="stylesheet">
-  
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <link href="{{BASE}}/Components/css/animates.css" rel="stylesheet" >
-    <link href="{{BASE}}/Components/css/style.css" rel="stylesheet" >
-    <link href="{{BASE}}/Components/css/boot.css" rel="stylesheet" >
-    <link href="{{BASE}}/Components/css/icons.css" rel="stylesheet" >
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bem-vindo ao Horus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00a8ff;
+            --background-color: #1a202c;
+            --surface-color: rgba(255, 255, 255, 0.05);
+            --text-color: #e2e8f0;
+            --text-color-muted: #a0aec0;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
 
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    <title>{{titulo}}</title>
-  </head>
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 5px var(--primary-color));
+            }
+            50% {
+                transform: scale(1.05);
+                filter: drop-shadow(0 0 15px var(--primary-color));
+            }
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 5px var(--primary-color));
+            }
+        }
 
-  <body>
-    
-      {{header}}
-      {{content}}
-      {{footer}}
-       
-      <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-      <script src="https://accounts.google.com/gsi/client" async defer></script>
-      <script src="{{BASE}}/Components/js/script.js" ></script>
-      <script src="{{BASE}}/Components/js/reveal.js" ></script>
-            <!-- Adicione esta parte ao seu HTML, antes do fechamento do </body> -->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.8/jquery.inputmask.min.js" integrity="sha512-efAcjYoYT0sXxQRtxGY37CKYmqsFVOIwMApaEbrxJr4RwqVVGw8o+Lfh/+59TU07+suZn1BWq4fDl5fdgyCNkw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-      
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
 
-      <script src="{{BASE}}/Components/js/forms.js"></script>
-  </body>
+        #horus-logo {
+            width: 100px;
+            height: 100px;
+            animation: pulse 4s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-weight: 600;
+            font-size: 2.5rem;
+            margin: 0;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-color-muted);
+            margin-top: 0.5rem;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+        }
+
+        .visit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .visit-card, .form-container, #empty-state {
+            background: var(--surface-color);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .visit-card {
+            border-left: 5px solid var(--primary-color);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .visit-card h3 {
+            margin: 0 0 1rem;
+            font-size: 1.2rem;
+        }
+        .visit-card p {
+            margin: 0.25rem 0;
+            color: var(--text-color-muted);
+        }
+        .visitor-name {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        #empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        #empty-state h3 {
+            margin: 0 0 1rem;
+            font-size: 1.5rem;
+        }
+
+        .form-container {
+            position: sticky;
+            top: 2rem;
+        }
+        .form-container h2 { margin-top: 0; }
+        .input-group { margin-bottom: 1.2rem; }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--text-color);
+            font-size: 1rem;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 168, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <!-- Logótipo SVG Animado -->
+            <svg id="horus-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 30 C30 30 15 50 15 50 C15 50 30 70 50 70 C70 70 85 50 85 50 C85 50 70 30 50 30 Z" stroke="var(--primary-color)" stroke-width="3" fill="none"/>
+                <circle cx="50" cy="50" r="10" fill="var(--primary-color)"/>
+            </svg>
+            <h1>Bem-vindo ao Horus</h1>
+            <p class="subtitle">A sua aplicação moderna de registo de visitas.</p>
+        </header>
+
+        <div class="layout">
+            <div class="visit-list" id="visit-list">
+                <!-- Conteúdo dinâmico aqui -->
+            </div>
+            <div class="form-container">
+                <h2>Registar Nova Visita</h2>
+                <form id="add-visit-form">
+                    <div class="input-group">
+                        <label for="visitorName">Nome do Visitante</label>
+                        <input type="text" id="visitorName" required placeholder="Ex: Ada Lovelace">
+                    </div>
+                    <div class="input-group">
+                        <label for="location">Local da Visita</label>
+                        <input type="text" id="location" required placeholder="Ex: Laboratório de Inovação">
+                    </div>
+                    <button type="submit">Adicionar Visita</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const visitListElement = document.getElementById('visit-list');
+        const form = document.getElementById('add-visit-form');
+
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('pt-PT', { 
+                dateStyle: 'long', 
+                timeStyle: 'short' 
+            }).format(date);
+        }
+        
+        function sanitizeHTML(text) {
+            const temp = document.createElement('div');
+            temp.textContent = text;
+            return temp.innerHTML;
+        }
+
+        function createVisitCardHTML(visit) {
+            return `
+                <div class="visit-card">
+                    <h3>Visita de: <span class="visitor-name">${sanitizeHTML(visit.name)}</span></h3>
+                    <p><strong>Data:</strong> ${formatDate(new Date(visit.date))}</p>
+                    <p><strong>Local:</strong> ${sanitizeHTML(visit.location)}</p>
+                </div>
+            `;
+        }
+        
+        function createEmptyStateHTML() {
+             return `
+                <div id="empty-state">
+                    <h3>Ainda não há visitas</h3>
+                    <p>Utilize o formulário para adicionar a sua primeira visita e vê-la aparecer aqui.</p>
+                </div>
+            `;
+        }
+
+        function renderVisits() {
+            const visits = JSON.parse(localStorage.getItem('visits')) || [];
+            
+            if (visits.length === 0) {
+                visitListElement.innerHTML = createEmptyStateHTML();
+                return;
+            }
+            
+            const allCardsHTML = visits
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map(createVisitCardHTML)
+                .join('');
+
+            visitListElement.innerHTML = allCardsHTML;
+        }
+        
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const visitorNameInput = document.getElementById('visitorName');
+            const locationInput = document.getElementById('location');
+            const visits = JSON.parse(localStorage.getItem('visits')) || [];
+            
+            const newVisit = {
+                name: visitorNameInput.value,
+                location: locationInput.value,
+                date: new Date().toISOString()
+            };
+            
+            visits.push(newVisit);
+            localStorage.setItem('visits', JSON.stringify(visits));
+            
+            renderVisits();
+            form.reset();
+        });
+        
+        document.addEventListener('DOMContentLoaded', renderVisits);
+    </script>
+
+</body>
 </html>

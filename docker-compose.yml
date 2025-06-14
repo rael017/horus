@@ -1,0 +1,53 @@
+services:
+  # O serviço da nossa aplicação Horus
+  app:
+    build: .
+    container_name: horus_app
+    ports:
+      - "9501:9501"
+    volumes:
+      - .:/var/www/html
+    command: php Nexus
+    # A condição de dependência agora espera que o serviço 'db' esteja "saudável"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # O nosso serviço de base de dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: horus_db
+    restart: unless-stopped
+    ports:
+      # Expõe a porta da base de dados para que possa ligar-se com um cliente como o DBeaver ou o TablePlus
+      - "3307:3306"
+    environment:
+      # Defina aqui as credenciais para a sua nova base de dados
+      MYSQL_DATABASE: ${DB_NAME:-horus_db}
+      MYSQL_USER: ${DB_USER:-user}
+      MYSQL_PASSWORD: ${DB_PASS:-password}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+    volumes:
+      # Garante que os dados da sua base de dados não se perdem ao parar o contentor
+      - db_data:/var/lib/mysql
+    # CORREÇÃO: Healthcheck mais robusto que tenta executar uma consulta real.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+   # NOVO SERVIÇO: phpmyadmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: horus_pma
+    ports:
+      - "8080:80" # Aceda ao phpMyAdmin em http://localhost:8080
+    environment:
+      PMA_HOST: db # Diz ao phpMyAdmin para se ligar ao nosso serviço 'db'
+      PMA_PORT: 3306
+    depends_on:
+      - db
+
+
+volumes:
+  db_data:

@@ -1,10 +1,10 @@
 <?php
 
 namespace Core\Middlewares;
-
+use Core\Middlewares\IMiddleware;
 use Exception;
 
-class Manutention
+class Manutention implements IMiddleware
 {
 /**
  * metodo responsavel por executar o middleware

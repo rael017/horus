@@ -3,156 +3,38 @@ namespace Core\Http;
 
 class Request
 {
-    /**
-     * Retorna o Método HTTP da requisição
-     * @var array
-     */
-    private $httpMethod;
+    public readonly string $uri;
+    public readonly string $httpMethod;
+    public readonly array $queryParams;
+    public readonly array $postVars;
+    public readonly array $headers;
+    public readonly string $ipAddress;
 
-    /**
-     * URI da página
-     * @var string
-     */
-    private $uri;
-
-    /**
-     * Parâmetros da URL ($_GET)
-     * @var array
-     */
-    private $queryParams = [];
-
-    /**
-     * Variáveis Recebidas ($_POST)
-     * @var array
-     */
-    private $postVars = [];
-
-    /**
-     * Cabeçalho da Request
-     * @var array
-     */
-    private $header = [];
-
-    /**
-     * Variáveis de Arquivo ($_FILES)
-     * @var array
-     */
-    private $fileVars = [];
-
-    /**
-     * Instância do Router
-     * @var object
-     */
-    private $router;
-
-    /**
-     * Endereço IP do Cliente
-     * @var string
-     */
-    private $ipAddress;
-
-	private $user;
-
-    public function __construct($router)
+    public function __construct()
     {
-        $this->router = $router;
+        $this->httpMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $this->uri = explode('?', $_SERVER['REQUEST_URI'] ?? '/')[0];
         $this->queryParams = $_GET ?? [];
+        $this->headers = function_exists('getallheaders') ? getallheaders() : [];
+        $this->ipAddress = $this->resolveIpAddress();
+        
+        // Trata corpos de requisição JSON para PUT/POST
         $this->postVars = $_POST ?? [];
-        $this->header = getallheaders();
-        $this->fileVars = $_FILES ?? [];
-        $this->httpMethod = $_SERVER['REQUEST_METHOD'] ?? '';
-        $this->uri = $_SERVER['REQUEST_URI'] ?? '';
-        $this->ipAddress = $this->getIpAddress(); // Definir o endereço IP
-        $this->setUri();
-        $this->setPostVars();
-    }
-
-    private function setPostVars()
-    {
-        if ($this->httpMethod == 'GET') return false;
-
-        $this->postVars = $_POST ?? [];
-
-        $inputRaw = file_get_contents('php://input');
-
-        $this->postVars = (strlen($inputRaw) && empty($_POST)) ? json_decode($inputRaw, true) : $this->postVars;
-    }
-
-    private function setUri()
-    {
-        $this->uri = $_SERVER['REQUEST_URI'] ?? '';
-        $xUri = explode('?', $this->uri);
-
-        $this->uri = $xUri[0];
-    }
-
-    public function getMethodHttp()
-    {
-        return $this->httpMethod;
-    }
-
-    public function getUri()
-    {
-        return $this->uri;
-    }
-
-    public function getHeaders()
-    {
-        return $this->header;
-    }
-
-    public function getFilesVars()
-    {
-        return $this->fileVars;
-    }
-
-    public function getQueryParams()
-    {
-        return $this->queryParams;
-    }
-
-    public function getPostVars()
-    {
-        return $this->postVars;
-    }
-
-    public function getRoute()
-    {
-        return $this->router;
-    }
-
-    /**
-     * Método para obter o endereço IP do cliente
-     * @return string
-     */
-    private function getIpAddress()
-    {
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            // IP fornecido pelo ISP do usuário
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            // IP passado pelo cabeçalho do proxy
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            // IP remoto padrão
-            $ip = $_SERVER['REMOTE_ADDR'];
+        if (in_array($this->httpMethod, ['POST', 'PUT', 'PATCH']) && empty($_POST)) {
+            $inputRaw = file_get_contents('php://input');
+            $jsonData = json_decode($inputRaw, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $this->postVars = $jsonData;
+            }
         }
-
-        // Tratar o caso de múltiplos IPs em HTTP_X_FORWARDED_FOR (pegar o primeiro IP)
-        if (strpos($ip, ',') !== false) {
-            $ip = explode(',', $ip)[0];
-        }
-
-        return $ip;
     }
 
-    /**
-     * Método para obter o endereço IP do cliente armazenado
-     * @return string
-     */
-    public function getIpAddressStored()
+    private function resolveIpAddress(): string
     {
-        return $this->ipAddress;
+        return $_SERVER['HTTP_CLIENT_IP']
+            ?? $_SERVER['HTTP_X_FORWARDED_FOR']
+            ?? $_SERVER['REMOTE_ADDR']
+            ?? '127.0.0.1';
     }
 }
 ?>

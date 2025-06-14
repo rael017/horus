@@ -1,6 +1,8 @@
 <?php 
 namespace App\Controllers\Web;
 
+use Core\Utils\MainView;
+
 class Home extends BaseController
 {
 	
@@ -12,7 +14,7 @@ class Home extends BaseController
 
 
     public static function getIndex($request,$msg = null){
-       return 'oi';
+       return MainView::render('index');
     }
 
 }

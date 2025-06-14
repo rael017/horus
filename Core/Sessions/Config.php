@@ -1,67 +1,98 @@
 <?php
 namespace App\Sessions\Admin;
 
-class Config{
+use Predis\Client;
 
+class Config {
+    private static $redis;
+    private static $sessionTTL = 1800; // Tempo padrão de expiração da sessão (30 minutos)
 
-    protected static function init()
-    {
+    /**
+     * Inicializa Redis e configura parâmetros da sessão
+     */
+    private static function initRedis() {
+        if (!self::$redis) {
+            self::$redis = new Client();
+            self::$redis->connect('127.0.0.1', 6379);
+        }
+    }
+
+    /**
+     * Inicia uma sessão segura
+     */
+    public static function init() {
+        self::initRedis();
+
         session_set_cookie_params([
+            'lifetime' => 0,  // Expira ao fechar o navegador
             'path' => '/',
-            'domain' => '', // Defina seu domínio, se necessário
-            'secure' => true, // Só enviar cookies através de HTTPS
-            'httponly' => true, // Cookie acessível apenas via HTTP
-            'samesite' => 'Strict' // Restringir cookie ao mesmo site
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Strict'
         ]);
 
-        if (session_status() != PHP_SESSION_ACTIVE) {
-            session_set_cookie_params(0); // Define o cookie para expirar ao fechar o navegador
+        if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        // Verificar se a sessão precisa ser regenerada
-        if (!empty($_SESSION['last_regeneration']) && time() > $_SESSION['last_regeneration'] + 60*60*2) {
-            self::my_session_regenerate_id();
+        // Verifica se a sessão está registrada no Redis
+        if (!isset($_SESSION['session_key']) || !self::$redis->exists($_SESSION['session_key'])) {
+            self::logoutUser(); // Se não existir, desloga o usuário
         }
 
-        // Do not allow to use too old session ID
-        if (!empty($_SESSION['deleted_time']) && $_SESSION['deleted_time'] < time() - 60*60*4) {
-            self::logoutUser(); // Logout se a sessão estiver muito antiga
-        }
+        // Atualiza o tempo de expiração no Redis
+        self::$redis->expire($_SESSION['session_key'], self::$sessionTTL);
     }
 
-    protected static function my_session_regenerate_id()
-    {
-        // Salvar os dados da sessão atual
-        $backup = $_SESSION;
+    /**
+     * Cria uma nova sessão segura e armazena no Redis
+     * 
+     * @param string $sessionName Nome da sessão (ex: 'admin', 'user')
+     * @param array $data Dados a serem armazenados na sessão
+     * @param int|null $ttl Tempo de expiração da sessão (padrão: 30 min)
+     */
+    public static function createSession(string $sessionName, array $data, int $ttl = null) {
+        self::initRedis();
+        
+        if ($ttl) {
+            self::$sessionTTL = $ttl;
+        }
 
-        // Regenerar o ID da sessão
+        session_start();
         session_regenerate_id(true);
 
-        // Restaurar os dados da sessão
-        $_SESSION = $backup;
+        $sessionKey = "session_{$sessionName}_" . session_id();
 
-        // Atualizar o tempo de exclusão da sessão
-        $_SESSION['deleted_time'] = time();
+        $_SESSION['session_key'] = $sessionKey;
+        $_SESSION['session_name'] = $sessionName;
 
-        // Atualizar o tempo da última regeneração
-        $_SESSION['last_regeneration'] = time();
+        self::$redis->setex($sessionKey, self::$sessionTTL, json_encode($data));
     }
 
-     public static function logoutUser()
-    {
-        self::init();
+    /**
+     * Obtém os dados da sessão armazenados no Redis
+     */
+    public static function getSessionData() {
+        self::initRedis();
 
-        // Destruir todos os dados da sessão relacionados ao usuário admin
-        unset($_SESSION['admin']['usuario']);
-        unset($_SESSION['admin']['chave_unica']);
+        if (!isset($_SESSION['session_key']) || !self::$redis->exists($_SESSION['session_key'])) {
+            return null;
+        }
 
-        // Remover o cookie seguro
-        setcookie('admin_session_key', '', time() - 1, '/', '', true, true);
+        return json_decode(self::$redis->get($_SESSION['session_key']), true);
+    }
 
-        // Destruir a sessão completamente
+    /**
+     * Destroi a sessão e remove do Redis
+     */
+    public static function logoutUser() {
+        self::initRedis();
+
+        if (isset($_SESSION['session_key'])) {
+            self::$redis->del($_SESSION['session_key']);
+        }
+
+        session_unset();
         session_destroy();
-
-        return true;
     }
 }

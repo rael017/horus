@@ -18,7 +18,7 @@ class MainView
 	 */
 	private static function getContentView($view)
 	{
-		$file = __DIR__.'/../../Resources/Views/'.$view.'.html';
+		$file = __DIR__.'/../../Resources/'.$view.'.html';
 		return file_exists($file) ? file_get_contents($file) : '';
 	}
 	

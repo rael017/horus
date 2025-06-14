@@ -1,121 +1,91 @@
 <?php
 
 namespace Core\DataBase;
+use PDO;
 
 class MigrationManeger extends Conection
 {
-    // Método para criar tabelas
-    public static function createTable($tableName, $columns) {
+    /**
+     * Garante que a tabela de controle de migrações exista e tenha a estrutura correta.
+     */
+    public static function ensureMigrationsTableExists(): void
+    {
+        $sql = "CREATE TABLE IF NOT EXISTS `migrations` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `migration` VARCHAR(255) NOT NULL UNIQUE,
+            `nome_tb` VARCHAR(255) NOT NULL UNIQUE,
+            `batch` INT NOT NULL,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        
+        parent::execute($sql);
+    }
+
+    /**
+     * Retorna um array com os nomes de todas as migrações que já foram executadas.
+     */
+    public static function getRanMigrations(): array
+    {
+        $results = parent::execute("SELECT `migration` FROM `migrations`")->fetchAll(PDO::FETCH_COLUMN);
+        return $results ?: [];
+    }
+
+    /**
+     * Retorna o número do último lote executado.
+     */
+    public static function getLastBatchNumber(): int
+    {
+        $result = parent::execute("SELECT MAX(`batch`) as `max_batch` FROM `migrations`")->fetch();
+        return $result['max_batch'] ?? 0;
+    }
+
+    /**
+     * Registra uma migração executada no banco de dados.
+     */
+    public static function logMigration(string $migrationName, $className , int $batch): void
+    {
+        ; // Remove os espaços para criar CamelCase
+        parent::execute(
+            "INSERT INTO `migrations` (`migration`, `nome_tb`,`batch`) VALUES (?, ?, ?)",
+            [$migrationName,$className, $batch]
+        );
+    }
+
+    /**
+     * Retorna todas as migrações do último lote para o rollback.
+     */
+    public static function getMigrationsForLastBatch(): array
+    {
+        $lastBatch = self::getLastBatchNumber();
+        if ($lastBatch === 0) {
+            return [];
+        }
+        return parent::execute("SELECT * FROM `migrations` WHERE `batch` = ? ORDER BY `id` DESC", [$lastBatch])->fetchAll();
+    }
+
+    /**
+     * Remove o registro de uma migração do log (usado no rollback).
+     */
+    public static function removeMigrationFromLog(int $migrationId): void
+    {
+        parent::execute("DELETE FROM `migrations` WHERE `id` = ?", [$migrationId]);
+    }
+    
+    // --- Métodos de Schema (usados pelos arquivos de migração) ---
+
+    public static function createTable(string $tableName, array $columns): void
+    {
         $columnDefinitions = [];
         foreach ($columns as $column => $definition) {
             $columnDefinitions[] = "`$column` $definition";
         }
         $columnsSql = implode(', ', $columnDefinitions);
-
-        $sql = "CREATE TABLE `$tableName` ($columnsSql)";
-        
-        parent::execute($sql);
-        return true;
-    }
-
-    // Método para apagar tabelas
-    public static function dropTable($tableName) {
-        $sql = "DROP TABLE IF EXISTS `$tableName`";
-        
-        parent::execute($sql);
-        return true;
-    }
-
-    // Método para realizar rollback por lote
-    public static function rollbackByBatch($batchNumber) {
-        $migrations = self::getMigrationsByBatch($batchNumber);
-        foreach ($migrations as $migration) {
-            self::createBackup($migration['table_name']); // Cria um backup da tabela antes do rollback
-            $migrationInstance = new $migration['class_name']();
-            $migrationInstance->down();  // Reverter migração
-            self::removeMigrationFromLog($migration['id']);
-        }
-    }
-
-    // Método para realizar rollback por nome
-    public static function rollbackByName($migrationName) {
-        $migration = self::getMigrationByName($migrationName);
-        if ($migration) {
-            self::createBackup($migration['table_name']); // Cria um backup da tabela antes do rollback
-            $migrationInstance = new $migration['class_name']();
-            $migrationInstance->down();  // Reverter migração
-            self::removeMigrationFromLog($migration['id']);
-        } else {
-            echo "Migração não encontrada: $migrationName\n";
-        }
-    }
-
-    // Método para realizar rollback de todas as migrações
-    public static function rollbackAll() {
-        $migrations = self::getAllMigrations();
-        foreach ($migrations as $migration) {
-            self::createBackup($migration['table_name']); // Cria um backup da tabela antes do rollback
-            $migrationInstance = new $migration['class_name']();
-            $migrationInstance->down();  // Reverter migração
-            self::removeMigrationFromLog($migration['id']);
-        }
-    }
-
-    // Método para realizar rollback da última migração
-    public static function rollbackLastMigration() {
-        $lastMigration = self::getLastMigration();
-        if ($lastMigration) {
-            self::createBackup($lastMigration['table_name']); // Cria um backup da tabela antes do rollback
-            $migrationInstance = new $lastMigration['class_name']();
-            $migrationInstance->down();  // Reverter migração
-            self::removeMigrationFromLog($lastMigration['id']);
-        } else {
-            echo "Nenhuma migração encontrada para reverter.\n";
-        }
-    }
-
-    // Método para criar backup de uma tabela
-    private static function createBackup($tableName) {
-        $backupTable = "backup_" . $tableName . "_" . date("Y_m_d_H_i_s");
-        $sql = "CREATE TABLE `$backupTable` AS SELECT * FROM `$tableName`";
-        
+        $sql = "CREATE TABLE `$tableName` ($columnsSql) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
         parent::execute($sql);
     }
 
-    // Método para obter as migrações por lote
-    private static function getMigrationsByBatch($batchNumber) {
-        // Exemplo simplificado: substitua pelo código que obtém as migrations do banco de dados ou de um arquivo de log
-        return self::query("SELECT * FROM migrations WHERE batch = ?", [$batchNumber]);
-    }
-
-    // Método para obter a migração pelo nome
-    private static function getMigrationByName($migrationName) {
-        // Exemplo simplificado: substitua pelo código que obtém a migração do banco de dados ou de um arquivo de log
-        return self::query("SELECT * FROM migrations WHERE name = ?", [$migrationName]);
-    }
-
-    // Método para obter todas as migrações
-    private static function getAllMigrations() {
-        // Exemplo simplificado: substitua pelo código que obtém todas as migrations do banco de dados ou de um arquivo de log
-        return self::query("SELECT * FROM migrations");
-    }
-
-    // Método para obter a última migração
-    private static function getLastMigration() {
-        // Exemplo simplificado: substitua pelo código que obtém a última migração do banco de dados ou de um arquivo de log
-        return self::query("SELECT * FROM migrations ORDER BY id DESC LIMIT 1");
-    }
-
-    // Método para remover a migração do log após o rollback
-    private static function removeMigrationFromLog($migrationId) {
-        // Exemplo simplificado: substitua pelo código que remove a migração do banco de dados ou de um arquivo de log
-        parent::execute("DELETE FROM migrations WHERE id = ?", [$migrationId]);
-    }
-
-    // Método para executar consultas ao banco de dados
-    private static function query($sql, $params = []) {
-        // Exemplo simplificado: substitua pela lógica de execução de consultas ao banco de dados
-        $stmt = parent::execute($sql,$params);
-        return $stmt->fetchAll();
+    public static function dropTable(string $tableName): void
+    {
+        parent::execute("DROP TABLE IF EXISTS `$tableName`");
     }
 }

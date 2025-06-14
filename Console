@@ -1,0 +1,15 @@
+#!/usr/bin/env php
+<?php
+
+// Define a constante da raiz do projeto
+define('HORUS_ROOT', __DIR__);
+
+// Carrega o autoloader e outras configurações iniciais
+require __DIR__ . '/vendor/autoload.php';
+// Se tiver um ficheiro de bootstrap, inclua-o aqui
+include_once(__DIR__.  '/Includes/App.php');
+
+include_once(__DIR__.  '/Includes/Bootstrap.php');
+// Executa a aplicação de consola
+use Core\Console\Horus;
+Horus::run($argv);

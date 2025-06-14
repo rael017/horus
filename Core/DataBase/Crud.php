@@ -106,46 +106,38 @@ class Crud extends Conection
         return true;
     }
 
-	public static function Describe($table)
-	{
-		try {
-			$query = parent::execute("DESCRIBE `$table`");
-			$columns = $query->fetchAll(\PDO::FETCH_ASSOC);
-			return $columns;
-		} catch (PDOException $e) {
-			// Caso a tabela não exista, o erro será tratado aqui
-			if ($e->getCode() == '42S02') {
-				return false; // Retorna falso quando a tabela não é encontrada
-			}
-			throw $e; // Relança a exceção para outros erros
-		}
-	}
+	
+    
+    // ... outros métodos ...
 
-	public static function tableExists($tableName)
-{
-    try {
-        $sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = :tableName AND TABLE_SCHEMA = :database";
-        $stmt = parent::conectar()->prepare($sql);
-        $stmt->execute([
-            ':tableName' => $tableName,
-            ':database' => 'testes', // Substitua pelo nome do seu banco de dados
-        ]);
-        
-        $count = $stmt->fetchColumn();
-        
-        // Verifica se a tabela existe
-        if ($count > 0) {
-            echo "Tabela '$tableName' já existe.\n";
-            return true;
-        } else {
-            echo "Tabela '$tableName' não encontrada.\n";
+    public static function Describe($table)
+    {
+        try {
+            $query = parent::execute("DESCRIBE `$table`");
+            return $query->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            if ($e->getCode() == '42S02') { // Tabela não encontrada
+                return []; // Retorna array vazio em vez de false para consistência
+            }
+            throw $e; // Relança outros erros
+        }
+    }
+
+    /**
+     * Verifica se uma tabela existe no banco de dados.
+     * CORRIGIDO: Usa a constante DB_NAME para ser dinâmico.
+     */
+    public static function tableExists(string $tableName): bool
+    {
+        try {
+            $sql = "SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? LIMIT 1";
+            $stmt = parent::execute($sql, [DB_NAME, $tableName]);
+            return $stmt->fetchColumn() !== false;
+        } catch (PDOException $e) {
+            error_log("Erro ao verificar existência da tabela '$tableName': " . $e->getMessage());
             return false;
         }
-    } catch (\Exception $e) {
-        echo "Erro ao verificar tabela '$tableName': " . $e->getMessage() . "\n";
-        return false;
     }
-}
 
 	
 }

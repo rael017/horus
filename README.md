@@ -9,8 +9,12 @@
 ## **Recursos**  
 - 🌎 Estrutura modular baseada em **App, Core, Routes, Resources, Includes**  
 - 🛠️ **Sistema próprio de migrations**, similar ao Artisan  
+<<<<<<< HEAD
 - 🔄 **ORM simplificado** para manipulação do banco de dados  
 - 📁 **Separação do backend e frontend Sistema de Template String**
+=======
+- 🔄 **ORM simplificado**, para manipulação do banco de dados  
+- 📁 **Separação do backend e frontend**, sistema de template strings
 - 🔌 **Compatível com MySQL**  
 
 ## **Instalação**  

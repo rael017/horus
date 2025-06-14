@@ -5,7 +5,12 @@ use \App\Controllers\Web;
 
 $obRouter->get('/',[
 	function($request){
-		return new Response(200,Web\Home::getIndex($request));
+		 
+        // Chama o método estático diretamente
+        $conteudo = Web\Home::getIndex($request); 
+
+        // Retorna a resposta
+        return new Response($conteudo, 200);
 	}
 ]);
 

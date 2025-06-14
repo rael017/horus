@@ -1,16 +1,16 @@
 <?php
-
 namespace App\Models;
+
 use Core\DataBase\Crud;
 
-class Posts
+class Onss
 {
     public $id;
     public $name;
     public $email;
     public $created_at;
 
-    protected $tableName = 'tb_posts';
+    protected $tableName = 'tb_onss';
 
     public function create()
     {

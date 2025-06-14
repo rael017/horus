@@ -1,282 +1,176 @@
 <?php
  namespace Core\Http;
- use \Closure;
- use \Exception;
- use \ReflectionFunction;
- use \Core\Middlewares\Config;
+use Closure;
+use ReflectionFunction;
+use Core\Http\Exceptions\RouteNotFoundException;
+use Core\Middlewares\MiddlewarePipeline;
+
 
 class Router
 {
-	 /**
-	  * URL Completa Do Projeto (Raiz)
-	  *@var string
-	  */
-	  
-	  private $url = '';
-	  
-	  /**
-	   * Perfixo Das Rotas
-	   * @var string
-	   */
-	  
-	  private $prefix = '';
-	  
-	  
-	  /**
-	   * Indice De Rotas
-	   * @var array
-	   */
-	  
-	  private $routes = [];
-	   
-	  
-	  /**
-	   * Instancia De Request
-	   * @var Request
-	   */
-	  
-	  private $request;
-	  
-	  private $contenType = 'text/html';
+    private array $routes = [];
+    private string $prefix = '';
+    private array $groupMiddleware = [];
 
-	  public function __construct($url)
-	  {
-		
-		   $this->request = new Request($this);
-		   $this->url = $url;
-		   $this->setPrefix();
-	  }
+    public function __construct(
+        private Request $request,
+        private string $baseUrl,
+        private array $middlewareMap = [],
+        private array $defaultMiddleware = []
+    ){}
 
-	  public function setContenType($contenType){
-		$this->contenType = $contenType;
-	  }
-	   
-	  /**
-	   * Metodo Responsavel Por Definir O Prefixo Das Rotas
-	   * @param string $url
-	   */
-	  private function setPrefix()
-	  {
-		  $parse_url = parse_url($this->url);
-		  $this->prefix = $parse_url['path'] ?? '';
-	  }
-	  
-	  /**
-	   * Metodo Responsavel Por Adicionar Uma Rota Na Classe
-	   * @param string $method
-	   * @param string $route
-	   * @param array $params
-	   */
-	  
-	  private function addRoute($method,$route,$params = [])
-	  {
-		
-		foreach($params as $key => $value){
-			
-			if($value instanceof Closure){
-				$params['Controller'] = $value;
-
-				unset($params[$key]);
-				continue;
-				
-			}
-			
-		}
-		$params['middlewares'] = $params['middlewares'] ?? [];
-		
-		
-		$params['variables'] = [];
-		
-		$patternVariable = '/{(.*?)}/';
-		if(preg_match_all($patternVariable,$route,$matches)){
-			$route = preg_replace($patternVariable,'(.*?)',$route);
-			$params['variables'] = $matches[1];
-			
-		}
-
-	    $patternRoute = '/^'.str_replace('/','\/',$route).'$/';    
-	
-		$this->routes[$patternRoute][$method] = $params;
-			
-	  }
-	  
-	  /**
-	   * Metodo Responsavel Por Definir Uma Rota De GET
-	   * @param string $route
-	   * @param array $params
-	   */
-	  
-	  public function get($route, $params = [])
-	  {
-		 
-		  return $this->addRoute('GET',$route,$params);
-	  }
-	  
-	  
-	   /**
-	   * Metodo Responsavel Por Definir Uma Rota De POST
-	   * @param string $route
-	   * @param array $params
-	   */
-	  
-	  public function post($route, $params = [])
-	  {
-		 
-		  return $this->addRoute('POST',$route,$params);
-	  }
-	  
-	   /**
-	   * Metodo Responsavel Por Definir Uma Rota De PUT
-	   * @param string $route
-	   * @param array $params
-	   */
-	  
-	  public function put($route, $params = [])
-	  {
-		 
-		  return $this->addRoute('PUT',$route,$params);
-	  }
-	  
-	    	  /**
-	   * Metodo Responsavel Por Definir Uma Rota De DELETE
-	   * @param string $route
-	   * @param array $params
-	   */
-	  
-	  public function delete($route, $params = [])
-	  {
-		 
-		  return $this->addRoute('DELETE',$route,$params);
-	  }
-	  
-	  /**
-	   * Metodo Responsavel Por Retornar A Uri Sem O Prefixo
-	   * @return string 
-	   */
-	  
-	  private function getUri()
-	  {
-		 $uri = $this->request->getUri();
-		 $xUri = strlen($this->prefix) ? explode($this->prefix,$uri) : [$uri];
-		 
-		 return end($xUri);
-	  }
-	  
-	  /**
-	   * Metodo Responsavel Por Retornar Os Dados Da Rota Atual
-	   * @return array
-	   */
-	  
-	  private function getRoute()
-	  {
-		$uri = $this->getUri();
-		
-		$httpMethod = $this->request->getMethodHttp();
-		
-		foreach($this->routes as $patternRoute => $methods){
-			if(preg_match($patternRoute,$uri,$matches)){
-				if(isset($methods[$httpMethod])){
-					
-					unset($matches[0]);
-					
-					$keys = $methods[$httpMethod]['variables'];
-					$methods[$httpMethod]['variables'] = array_combine($keys,$matches);
-					$methods[$httpMethod]['variables']['request'] = $this->request;
-					return $methods[$httpMethod];
-				}
-			
-			}
-			
-		}
-		throw new Exception('Pagina Nao Existe',404);
-		
-	  }
-	  
-	  /**
-	   * Metodo Responsavel Por Executar A Rota Atual
-	   * @return Response
-	   */
-	  public function run()
-	  {
-		 try{
-			$route = $this->getRoute();
-		
-			if(!isset($route['Controller'])){
-				throw new Exception('A Pagina Nao Pode Ser Processada',500);
-				
-			}
-			
-			$args = [];
-			$Reflection = new ReflectionFunction($route['Controller']);
-			
-			foreach($Reflection->getParameters() as $parameter){
-				$name = $parameter->getName();
-				$args[$name] = $route['variables'][$name] ?? '';
-			}
-			 $allowedOrigin = 'http://localhost:3000'; // Altere para sua origem específica
-            if (isset($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] === $allowedOrigin) {
-                header("Access-Control-Allow-Origin: " . $allowedOrigin);
-                header("Access-Control-Allow-Methods: GET");
-            }
-			return (new Config($route['middlewares'],$route['Controller'],$args))->next($this->request);
-			
-		 }catch(Exception $e){
-			return new Response($e->getCode(), $this->getMenssageError($e->getMessage()),$this->contenType);
-		 }
-	  }
-
-	  private function getMenssageError($menssage){
-		switch($this->contenType){
-			case 'application/json':
-				return[
-					'error'=>$menssage
-				];
-				break;
-			default:
-				return $menssage;
-				break;
-		}
-	  }
-	  
-	public function getCurrentUrl()
-	{
-		$this->url.$this->getUri();
-	}
-	  
-	public function redirect($route)
-	{
-    // Definir a URL completa de redirecionamento
-		$url = $this->url . $route;
-		header('Location: ' . $url);
-		exit; // Garantir que o script p
-
-
-	}
-
-	 /**
-     * Metodo Responsavel Por Agrupar Rotas Comum
-     * @param array $options
-     * @param Closure $callback
-     */
-    public function group(array $options, Closure $callback)
+    private function addRoute(string $method, string $route, array $params): void
     {
-        // Salvar estado atual
-        $prefixBackup = $this->prefix;
-        $middlewaresBackup = $options['middlewares'] ?? [];
+        $route = rtrim($this->prefix, '/') . '/' . ltrim($route, '/');
+        
+        // MUDANÇA: Aceita tanto Closure quanto [Classe, Metodo]
+        $params['controller'] = $params[0] ?? $params['controller'] ?? null;
+        unset($params[0]);
 
-        // Configurar novo prefixo e middlewares
-        if (isset($options['prefix'])) {
-            $this->prefix .= $options['prefix'];
+        if (!($params['controller'] instanceof Closure) && !is_array($params['controller'])) {
+             throw new \InvalidArgumentException("O controlador da rota deve ser uma Closure ou um array [Controller::class, 'metodo'].");
         }
 
-        // Executar o callback com o grupo de rotas
-        call_user_func($callback, $this);
+        $routeMiddleware = $params['middlewares'] ?? [];
+        $params['middlewares'] = array_merge($this->defaultMiddleware, $this->groupMiddleware, $routeMiddleware);
+        
+        $params['variables'] = [];
+        $patternVariable = '/\{([a-zA-Z0-9_]+)\}/';
+        if (preg_match_all($patternVariable, $route, $matches)) {
+            $route = preg_replace($patternVariable, '([a-zA-Z0-9_.-]+)', $route);
+            $params['variables'] = $matches[1];
+        }
 
-        // Restaurar estado anterior
-        $this->prefix = $prefixBackup;
-        $options['middlewares'] = $middlewaresBackup;
+        $patternRoute = '#^' . $route . '$#';
+        $this->routes[$patternRoute][$method] = $params;
     }
-	
- }
 
+    public function get(string $route, array $params): void { $this->addRoute('GET', $route, $params); }
+    public function post(string $route, array $params): void { $this->addRoute('POST', $route, $params); }
+    public function put(string $route, array $params): void { $this->addRoute('PUT', $route, $params); }
+    public function delete(string $route, array $params): void { $this->addRoute('DELETE', $route, $params); }
+
+    public function group(array $options, Closure $callback): void
+    {
+        $prefixBackup = $this->prefix;
+        $middlewareBackup = $this->groupMiddleware;
+
+        $this->prefix .= $options['prefix'] ?? '';
+        $this->groupMiddleware = array_merge($this->groupMiddleware, $options['middlewares'] ?? []);
+        $callback($this);
+
+        $this->prefix = $prefixBackup;
+        $this->groupMiddleware = $middlewareBackup;
+    }
+
+    private function getUri(): string
+    {
+        $uri = $this->request->uri;
+        $baseUrlPath = parse_url($this->baseUrl, PHP_URL_PATH) ?? '';
+        if ($baseUrlPath && str_starts_with($uri, $baseUrlPath)) {
+            return substr($uri, strlen($baseUrlPath)) ?: '/';
+        }
+        return $uri;
+    }
+    
+    private function findRoute(): array
+    {
+        $uri = $this->getUri();
+        $httpMethod = $this->request->httpMethod;
+
+        foreach ($this->routes as $patternRoute => $methods) {
+            if (preg_match($patternRoute, $uri, $matches)) {
+                if (isset($methods[$httpMethod])) {
+                    array_shift($matches);
+                    $routeParams = $methods[$httpMethod];
+                    $routeParams['variables'] = array_combine($routeParams['variables'], $matches);
+                    return $routeParams;
+                }
+            }
+        }
+        // Lança exceção com informações de depuração
+        throw new RouteNotFoundException('Route not found.', [
+            'uri' => $uri,
+            'method' => $httpMethod
+        ]);
+    }
+
+    public function run(): Response
+    {
+        try {
+            $route = $this->findRoute();
+            $controller = $route['controller'];
+            
+            // MUDANÇA: A lógica de preparação de argumentos foi melhorada.
+            $args = [];
+            if ($controller instanceof Closure) {
+                $reflection = new ReflectionFunction($controller);
+                foreach ($reflection->getParameters() as $parameter) {
+                    $name = $parameter->getName();
+                    $type = $parameter->getType();
+
+                    // Prioridade 1: Injeta parâmetros da URL (ex: /users/{id})
+                    if (isset($route['variables'][$name])) {
+                        $args[$name] = $route['variables'][$name];
+                        continue;
+                    }
+
+                    // Prioridade 2: Injeta a classe Request por type-hint
+                    if ($type && $type->getName() === Request::class) {
+                        $args[$name] = $this->request;
+                        continue;
+                    }
+                    
+                    // CORREÇÃO: Injeta a classe Request por convenção de nome ('request')
+                    if ($name === 'request') {
+                         $args[$name] = $this->request;
+                         continue;
+                    }
+                }
+            } else {
+                // Para controllers de classe, os argumentos da URL são passados diretamente.
+                $args = $route['variables'];
+            }
+            
+            $pipeline = new MiddlewarePipeline(
+                $route['middlewares'],
+                $controller,
+                $args,
+                $this->middlewareMap
+            );
+
+            $responseContent = $pipeline->next($this->request);
+
+            if ($responseContent instanceof Response) {
+                return $responseContent;
+            }
+
+            return new Response($responseContent);
+
+        } catch (RouteNotFoundException $e) {
+            // Exibe informações de depuração para o erro 404
+            $is_debug_mode = defined('APP_DEBUG') && APP_DEBUG === true;
+            $debugInfo = $e->getDebugInfo();
+            $errorMessage = "<h1>404 - Not Found</h1><p>A página que você procura não foi encontrada.</p>";
+            if ($is_debug_mode) {
+                $errorMessage .= "<hr><pre><b>DEBUG INFO:</b><br>";
+                $errorMessage .= "<b>URI Tentada:</b> " . htmlspecialchars($debugInfo['uri']) . "<br>";
+                $errorMessage .= "<b>Método:</b> " . htmlspecialchars($debugInfo['method']) . "</pre>";
+            }
+            return new Response($errorMessage, $e->getCode());
+
+        } catch (\Exception $e) {
+            // Loga o erro para referência futura
+            error_log($e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+
+            // Exibe erros detalhados em modo de depuração para facilitar a resolução de problemas.
+            $is_debug_mode = defined('APP_DEBUG') && APP_DEBUG === true;
+            $errorMessage = $is_debug_mode
+                ? "<h1>500 - Erro Interno do Servidor</h1><pre><b>Erro:</b> {$e->getMessage()}<br><b>Arquivo:</b> {$e->getFile()}<br><b>Linha:</b> {$e->getLine()}</pre>"
+                : "<h1>500 - Erro Interno do Servidor</h1><p>Ocorreu um erro inesperado.</p>";
+
+            return new Response($errorMessage, 500);
+        }
+    }
+}
 ?>

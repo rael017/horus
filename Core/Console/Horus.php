@@ -1,47 +1,59 @@
 <?php
 namespace Core\Console;
 
-
 class Horus
 {
     public static function run($args)
     {
-        if (count($args) < 2) {
-            die("Comando inválido. Use: php Horus [comando]\n");
+        // Define a constante da raiz do projeto, agora a partir da perspetiva do contentor
+       
+        $command = $args[1] ?? null;
+
+        // --- LÓGICA DE ANÁLISE DE ARGUMENTOS MELHORADA ---
+        $mainArgument = null;
+        $options = [];
+
+        // Itera sobre todos os argumentos após o nome do comando
+        for ($i = 2; $i < count($args); $i++) {
+            // Se o argumento começa com '-', é uma opção (flag)
+            if (str_starts_with($args[$i], '-')) {
+                $options[] = $args[$i];
+            } 
+            // O primeiro argumento que não é uma opção é considerado o argumento principal
+            else if ($mainArgument === null) {
+                $mainArgument = $args[$i];
+            }
         }
-        
-        $command = $args[1];
 
         switch ($command) {
-            case 'migrate':
-                $modelFlag = in_array('-m', $args);
-                $modelName = $modelFlag ? ($args[array_search('-m', $args) + 1] ?? null) : null;
-                \Core\Console\Migrate\RunMigrationsCommand::execute($modelFlag, $modelName);
+            
+            
+            case 'run:migrate':
+                 \Core\DataBase\MigrationManeger::ensureMigrationsTableExists();
+                 \Core\Console\Migrate\RunMigrationsCommand::execute($options);
+                 break;
+            
+            // ... adicione outros comandos aqui ...
+            case 'make:migrate':
+                // Agora passa o argumento principal correto
+                \Core\Console\Migrate\CreateMigrationCommand::execute($mainArgument);
                 break;
-            case 'seeder':
+            
+            case 'make:seeder':
+                \Core\Console\Seeders\CreateSeederCommand::execute($mainArgument);
+                break;
+            
+            case 'run:seeder':
                 \Core\Console\Seeders\RunSeedersCommand::execute();
                 break;
-            case 'make':
-                if (isset($args[2])) {
-                    switch ($args[2]) {
-                        case 'migrate':
-                            \Core\Console\Migrate\CreateMigrationCommand::execute($args[3] ?? null);
-                            break;
-                        case 'seeder':
-                            \Core\Console\Seeders\CreateSeederCommand::execute($args[3] ?? null);
-                            break;
-                    }
-                }
+            
+            case 'rollback':
+                \Core\Console\Migrate\RollbackCommand::execute();
                 break;
 
-            case 'server':
-                
-
             default:
-                echo "Comando não reconhecido: $command\n";
+                echo "Comando não reconhecido: '$command'\n";
                 break;
         }
     }
 }
-
-?>
