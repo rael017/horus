@@ -1,10 +1,50 @@
-#!/usr/bin/env php
-<?php
+#!/bin/bash
 
-require_once __DIR__ . '/vendor/autoload.php';
-include_once(__DIR__.  '/Includes/App.php');
-use Core\Console\Horus;
+# --- HORUS UNIFIED CLI WRAPPER ---
 
-Horus::run($argv);
+# Encontra o diretório onde o script está localizado
+BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+COMMAND=$1
 
-?>
+# Garante que estamos no diretório correto
+cd "$BASE_DIR"
+
+# Função para iniciar e observar o ambiente de desenvolvimento
+start_dev_environment() {
+    echo "🚀 A iniciar o ambiente Docker e o servidor Horus Nexus..."
+    docker compose up -d --build
+    
+    # Inicia os logs em segundo plano
+    docker compose logs -f app &
+    LOGS_PID=$!
+    
+    echo "--- Horus em modo de desenvolvimento. Pressione Ctrl+C para parar. ---"
+
+    cleanup() {
+        echo -e "\n🛑 A parar e a remover os contentores Docker..."
+        kill $LOGS_PID
+        docker compose down
+        exit 0
+    }
+    trap cleanup SIGINT
+    
+    # Loop de observação de ficheiros para hot-reloading
+    while true; do
+        find ./App ./Core ./Routes ./Includes -mmin -1 -name "*.php" -print | \
+        while read -r file; do
+             echo "✨ Ficheiro alterado: $file. A reiniciar o servidor..."
+             docker compose restart app
+             sleep 5 
+        done
+        sleep 2
+    done
+}
+
+# --- LÓGICA DE ROTEAMENTO DE COMANDOS ---
+if [[ "$COMMAND" == "Nexus" || "$COMMAND" == "nexus" ]]; then
+    start_dev_environment
+else
+    # CORREÇÃO: Executa o comando usando o novo script 'console' do PHP
+    echo " Mapeando o comando para o contentor Docker..."
+    docker compose exec app php Console "$@"
+fi
